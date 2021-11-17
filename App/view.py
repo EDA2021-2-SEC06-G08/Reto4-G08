@@ -47,6 +47,7 @@ def printMenu():
     print("9. REQ. 7 (BONO): Visualizar gráficamente los requerimientos") 
     print("0- Salir")
 
+
 catalog = None
 
 """
@@ -57,8 +58,30 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
-
+        catalog = controller.create_catalog()
+        
     elif int(inputs[0]) == 2:
+        controller.load_data(catalog)
+
+    elif int(inputs[0]) == 3:
+        pass
+    
+    elif int(inputs[0]) == 4:
+        pass
+    
+    elif int(inputs[0]) == 5:
+        pass
+
+    elif int(inputs[0]) == 6:
+        pass
+    
+    elif int(inputs[0]) == 7:
+        pass
+
+    elif int(inputs[0]) == 8:
+        pass
+
+    elif int(inputs[0]) == 9:
         pass
 
     else:
