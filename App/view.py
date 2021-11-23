@@ -20,9 +20,11 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from prettytable.prettytable import PrettyTable
 import config as cf
 import sys
 import controller
+from prettytable import PrettyTable as pt
 from DISClib.ADT import list as lt
 assert cf
 
@@ -47,6 +49,33 @@ def printMenu():
     print("9. REQ. 7 (BONO): Visualizar gráficamente los requerimientos") 
     print("0- Salir")
 
+def printLoadingData(data):
+    print(f"El numero total de aeropuertos para el dígrafo es: {data['#AirDG']}")
+    print(f"El numero total de aeropuertos para el grafo no dirigido es: {data['#AirG']}")
+    print(f"El numero total de ciudades es: {data['#Cities']}")
+
+    print(f"\nInformación primer aeropuerto dígrafo:")
+    dgTable = PrettyTable("Name,City,Country,Latitude,Longitude".split(","))
+    row = [data["FirstAirportDG"][i] for i in dgTable.field_names]
+    dgTable.add_row(row)
+    print(dgTable)
+
+    print(f"\nInformación primer aeropuerto grafo no dirigido:")
+    gTable = PrettyTable("Name,City,Country,Latitude,Longitude".split(","))
+    row = [data["FirstAirportG"][i] for i in dgTable.field_names]
+    gTable.add_row(row)
+    print(dgTable)
+
+    print("\nInformacíon de la ultima ciudad cargada")
+    cTable = PrettyTable(["city_ascii","lat","lng","population"])
+    row = [data["LastCity"][i] for i in cTable.field_names]
+    cTable.add_row(row)
+    print(cTable)
+
+
+def printMostInterconnections(data):
+    pass
+
 
 catalog = None
 
@@ -61,10 +90,13 @@ while True:
         catalog = controller.create_catalog()
         
     elif int(inputs[0]) == 2:
-        controller.load_data(catalog)
+        controller.loadData(catalog)
+        data = controller.getLoadingData(catalog)
+        printLoadingData(data)
 
     elif int(inputs[0]) == 3:
-        pass
+        data = controller.getMostInterconnections(catalog)
+        printMostInterconnections(data)
     
     elif int(inputs[0]) == 4:
         pass

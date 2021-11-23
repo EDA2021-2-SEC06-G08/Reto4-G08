@@ -31,8 +31,43 @@ El controlador se encarga de mediar entre la vista y el modelo.
 
 # Inicialización del Catálogo de libros
 
+def create_catalog():
+    return model.create_catalog()
+
 # Funciones para la carga de datos
+
+def loadData(catalog):
+    loadTables(catalog)
+    loadGraphs(catalog)
+    loadCities(catalog)
+
+def loadTables(catalog):
+    file = cf.data_dir + "Skylines/airports_full.csv"
+    airports = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
+
+    for airport in airports:
+        model.add_airport(catalog, airport)
+
+
+def loadGraphs(catalog):
+    file = cf.data_dir + "Skylines/routes_full.csv"
+    routes = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
+
+    for route in routes:
+        model.add_route(catalog, route)
+
+
+def loadCities(catalog):
+    file = cf.data_dir + "Skylines/worldcities.csv"
+    cities = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
+
+    for city in cities:
+        model.add_city(catalog, city)
+
 
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+
+def getLoadingData(catalog):
+    return model.getLoadingData(catalog)
