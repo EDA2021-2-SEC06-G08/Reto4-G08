@@ -32,7 +32,7 @@ from DISClib.ADT import graph as gph
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import orderedmap as om
 from DISClib.Algorithms.Sorting import shellsort as sa
-from DISClib.Algorithms.Graphs import scc,dijsktra
+from DISClib.Algorithms.Graphs import scc,dijsktra, prim
 import math
 from math import radians, cos, sin, asin, sqrt
 assert cf
@@ -226,6 +226,16 @@ def getShortestRoute(catalog, city1, city2):
 
     return airOrigin, airDest, routePath, distancePath,min_disto, min_distd
 
+def req4(catalog):
+    IATA = 'MID'
+    millas = 3000
+    km = millas*1.6
+
+    MST = prim.PrimMST(catalog["routesndg"])
+
+
+    MST = prim.edgesMST(catalog["routesndg"], MST)
+    return MST
 
 #Funciones auxiliares
 def haversine(lat1, lon1, lat2, lon2):

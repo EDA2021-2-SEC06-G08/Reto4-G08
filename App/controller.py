@@ -80,3 +80,6 @@ def getFlightTrafficClusters(catalog, IATA1, IATA2):
 
 def getShortestRoute(catalog, city1, city2):
     return model.getShortestRoute(catalog,city1,city2)
+
+def getreq4(catalog):
+    return model.req4(catalog)

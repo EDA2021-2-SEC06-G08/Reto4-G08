@@ -142,11 +142,11 @@ while True:
         city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
         try:
             req3 = controller.getShortestRoute(catalog, city1, city2)
-            printShortestRoute(req3,city1,city2)
+            # printShortestRoute(req3,city1,city2)
         except Exception:
             print("Lo siento, no tengo la información de las ciudades en mi base de datos")
     elif int(inputs[0]) == 6:
-        pass
+        print(controller.getreq4(catalog))
     
     elif int(inputs[0]) == 7:
         pass
