@@ -71,3 +71,12 @@ def loadCities(catalog):
 
 def getLoadingData(catalog):
     return model.getLoadingData(catalog)
+
+def getMostInterconnections(catalog):
+    return model.getMostInterconnections(catalog)
+
+def getFlightTrafficClusters(catalog, IATA1, IATA2):
+    return model.getFlightTrafficClusters(catalog, IATA1, IATA2)
+
+def getShortestRoute(catalog, city1, city2):
+    return model.getShortestRoute(catalog,city1,city2)

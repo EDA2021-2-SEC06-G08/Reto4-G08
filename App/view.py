@@ -24,10 +24,12 @@ from prettytable.prettytable import PrettyTable
 import config as cf
 import sys
 import controller
-from prettytable import PrettyTable as pt
+from prettytable import PrettyTable
+import prettytable as pt
 from DISClib.ADT import list as lt
 assert cf
 
+sys.setrecursionlimit(2**15)
 
 """
 La vista se encarga de la interacción con el usuario
@@ -62,9 +64,9 @@ def printLoadingData(data):
 
     print(f"\nInformación primer aeropuerto grafo no dirigido:")
     gTable = PrettyTable("Name,City,Country,Latitude,Longitude".split(","))
-    row = [data["FirstAirportG"][i] for i in dgTable.field_names]
+    row = [data["FirstAirportG"][i] for i in gTable.field_names]
     gTable.add_row(row)
-    print(dgTable)
+    print(gTable)
 
     print("\nInformacíon de la ultima ciudad cargada")
     cTable = PrettyTable(["city_ascii","lat","lng","population"])
@@ -73,9 +75,37 @@ def printLoadingData(data):
     print(cTable)
 
 
-def printMostInterconnections(data):
-    pass
+def printMostInterconnections(req1):
+    table = PrettyTable(["IATA", "Name", "City", "Country", "Graph", "#Interconnections"])
+    table.align = "c"
+    table.hrules = pt.ALL
 
+    dg_Num = req1[0][0]
+    l_dg = req1[0][1]
+    for vals in lt.iterator(l_dg):
+        row = []
+        for val in table.field_names[:-2]:
+            row += [vals[val]]
+        row += ["Digraph", dg_Num]
+        table.add_row(row)
+
+    g_num = req1[1][0]
+    l_g = req1[1][1]
+
+    for vals in lt.iterator(l_g):
+        row = []
+        for val in table.field_names[:-2]:
+            row += [vals[val]]
+        row += ["Non digraph", g_num]
+        table.add_row(row)
+
+    print(table)
+
+def printFlightTrafficClusters(req2, IATA1, IATA2):
+    print("")
+    print(f"En la red de transporte aeroeo existen {req2[0]} clusters")
+    print(f"Los aeropuertos {IATA1} y {IATA2} {'estan en el mismo cluster' if req2[1] else 'no estan en el mismo cluster'}.")
+    print("")
 
 catalog = None
 
@@ -95,15 +125,26 @@ while True:
         printLoadingData(data)
 
     elif int(inputs[0]) == 3:
-        data = controller.getMostInterconnections(catalog)
-        printMostInterconnections(data)
+        req1 = controller.getMostInterconnections(catalog)
+        printMostInterconnections(req1)
     
     elif int(inputs[0]) == 4:
-        pass
+        IATA1 = input("Ingrese el codigo IATA del primer aeropuerto (en mayusculas): ")
+        IATA2 = input("Ingrese el codigo IATA del segundo aeropuerto (en mayusculas): ")
+        try:
+            req2 = controller.getFlightTrafficClusters(catalog,IATA1,IATA2)
+            printFlightTrafficClusters(req2, IATA1, IATA2)
+        except Exception as ex:
+            print("Lo siento, no tengo la información de los aeropuertos en mi base de datos")
     
     elif int(inputs[0]) == 5:
-        pass
-
+        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes)")
+        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
+        try:
+            req3 = controller.getShortestRoute(catalog, city1, city2)
+            printShortestRoute(req3,city1,city2)
+        except Exception:
+            print("Lo siento, no tengo la información de las ciudades en mi base de datos")
     elif int(inputs[0]) == 6:
         pass
     
