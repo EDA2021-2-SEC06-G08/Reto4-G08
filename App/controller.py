@@ -40,6 +40,7 @@ def loadData(catalog):
     loadTables(catalog)
     loadGraphs(catalog)
     loadCities(catalog)
+    loadMST(catalog)
 
 def loadTables(catalog):
     file = cf.data_dir + "Skylines/airports_full.csv"
@@ -64,6 +65,8 @@ def loadCities(catalog):
     for city in cities:
         model.add_city(catalog, city)
 
+def loadMST(catalog):
+    model.loadMST(catalog)
 
 # Funciones de ordenamiento
 
@@ -81,5 +84,8 @@ def getFlightTrafficClusters(catalog, IATA1, IATA2):
 def getShortestRoute(catalog, city1, city2):
     return model.getShortestRoute(catalog,city1,city2)
 
-def getreq4(catalog):
-    return model.req4(catalog)
+def getFlyerMiles(catalog,city,miles):
+    return model.getUseFlyerMiles(catalog,city,miles)
+
+def checkCity(catalog, city):
+    return model.checkCity(catalog, city)

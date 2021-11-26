@@ -20,13 +20,15 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+from types import coroutine
 from prettytable.prettytable import PrettyTable
 import config as cf
 import sys
 import controller
 from prettytable import PrettyTable
 import prettytable as pt
-from DISClib.ADT import list as lt
+from DISClib.ADT import list as lt, map as mp
+from DISClib.DataStructures import mapentry as me
 assert cf
 
 sys.setrecursionlimit(2**15)
@@ -107,6 +109,65 @@ def printFlightTrafficClusters(req2, IATA1, IATA2):
     print(f"Los aeropuertos {IATA1} y {IATA2} {'estan en el mismo cluster' if req2[1] else 'no estan en el mismo cluster'}.")
     print("")
 
+def printShortestRoute(catalog, req3, origen, destino):
+    name = lambda x: me.getValue(mp.get(catalog['IATA2name'],x))['Name']
+
+    print(f"\nEl codigo IATA del aeropuerto de origen es {req3[0]['IATA']}")
+    print(f"El nombre es: {name(req3[0]['IATA'])}")
+
+    print(f"El codigo IATA del aeropuerto de destino es {req3[1]['IATA']}")
+    print(f"El nombre es: {name(req3[1]['IATA'])}")
+
+    print("La ruta mas corta es la siguiente:")
+    rutaT = PrettyTable(["Origen", "Destino", "Distancia (km)"])
+    rutaT.hrules = pt.ALL
+    for i in lt.iterator(req3[2]):
+        rutaT.add_row([name(i["vertexA"]),name(i["vertexB"]),i["weight"]])
+    print(rutaT)
+
+    print(f"La distancia para llegar a {name(req3[0]['IATA'])} desde {origen} es {round(req3[-2],2)}km")
+    print(f"La distancia para llegar a {destino} desde {name(req3[1]['IATA'])} es de {round(req3[-1],2)}km")
+    print(f"La distancia total del viaje es {round(req3[-3]+req3[-2]+req3[-1],2)}km\n")
+
+def printFlyerMiles(req4):
+    print(f"El numero de nodos conectados a la red de expansión minima es: {req4[1]}")
+    print(f"El distancia total de la red es de {req4[2]}")
+    print("Rama mas larga en la red:")
+    for pos,i in enumerate(lt.iterator(req4[3])):
+        if pos != lt.size(req4[3])-1:
+            print(i,end="->")
+        else:
+            print(i)
+    if req4[0] == 1:   
+        routeTable = PrettyTable(["Pos", "Ciudad", "Pais"])
+        tam = lt.size(req4[4])
+        routeTable.hrules = pt.ALL
+        print("Ruta optima con las millas disponibles")
+        for pos, i in enumerate(lt.iterator(req4[4])):
+            if pos == 0:
+                routeTable.add_row(["Origen", i[0], i[1]])
+            elif pos == tam-1:
+                routeTable.add_row(["Destino", i[0], i[1]])
+            else:
+                routeTable.add_row(["Parada", i[0], i[1]])
+        print(routeTable)
+    else:
+        print("Con las millas actual no es posible viajar a ninguna ciudad")
+
+def printSelectCity(cities):
+    print("Seleccione la ciudad que desee")
+    citiesT = PrettyTable(["Option", "City","State", "Country"])
+    citiesT.hrules = pt.ALL
+    citiesT.align = "c"
+    print(cities)
+    for i, city in enumerate(lt.iterator(cities),1):
+        citiesT.add_row([i,city["city_ascii"],city["admin_name"],city["country"]])
+    print(citiesT,end="\n\n")
+    opt = int(input("Seleccione una opción"))
+    return lt.getElement(cities,opt)
+    
+
+
 catalog = None
 
 """
@@ -140,13 +201,42 @@ while True:
     elif int(inputs[0]) == 5:
         city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes)")
         city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
-        try:
-            req3 = controller.getShortestRoute(catalog, city1, city2)
-            # printShortestRoute(req3,city1,city2)
-        except Exception:
-            print("Lo siento, no tengo la información de las ciudades en mi base de datos")
+
+        vcity1 = controller.checkCity(catalog,city1)
+        vcity2 = controller.checkCity(catalog,city2)
+
+        if vcity1 and vcity2:
+            if vcity1[0] == 1:
+                vcity1 = printSelectCity(vcity1[1])
+            else:
+                vcity1 = vcity1[1]
+
+            if vcity2[0] == 1:
+                vcity2 = printSelectCity(vcity2[1])
+            else:
+                vcity2 = vcity2[1]
+            req3 = controller.getShortestRoute(catalog, vcity1, vcity2)
+            printShortestRoute(catalog,req3,city1,city2)
+        else:
+            print("Lo siento alguna o las dos ciudades suministradas no se encuentran en la base de datos")
+    
     elif int(inputs[0]) == 6:
-        print(controller.getreq4(catalog))
+        city = input("Ingrese la ciudad de donde parte:")
+        valid = controller.checkCity(catalog, city)
+        if valid:
+            if valid[0] == 1:
+                city = printSelectCity(valid[1])
+            else:
+                city = valid[1]
+            
+            miles = float(input("Ingrese las millas disponibles"))
+            
+            req4 = controller.getFlyerMiles(catalog, city, miles)
+            printFlyerMiles(req4)
+        else:
+            print("Lo siento la ciudad ingresa no esta en mi base de datos")
+
+        
     
     elif int(inputs[0]) == 7:
         pass

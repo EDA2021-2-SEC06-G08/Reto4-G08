@@ -29,10 +29,10 @@ import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gph
-from DISClib.DataStructures import mapentry as me
-from DISClib.ADT import orderedmap as om
+from DISClib.DataStructures import mapentry as me, edge as e
+from DISClib.ADT import orderedmap as om, queue
 from DISClib.Algorithms.Sorting import shellsort as sa
-from DISClib.Algorithms.Graphs import scc,dijsktra, prim
+from DISClib.Algorithms.Graphs import scc,dijsktra, prim, bfs
 import math
 from math import radians, cos, sin, asin, sqrt
 assert cf
@@ -48,7 +48,7 @@ def create_catalog():
     catalog = {
         "routesdg" : gph.newGraph(directed=True, size=10000),
         "routesndg": gph.newGraph(size=3000),
-        # "name2IATA" : mp.newMap(10000,maptype="PROBING"),
+        "MST": {"TotCost":None, "NumNodes":None, "GraphMST":None},
         "IATA2name" : mp.newMap(10000,maptype="PROBING"),
         "DuplicateRoute" : mp.newMap(50000,maptype="PROBING"),
         "Cities": mp.newMap(41002,maptype="PROBING"),
@@ -140,9 +140,26 @@ def add_route(catalog, route):
 def add_city(catalog, city):
     name = city["city_ascii"]
     catalog["LastCity"] = city
-    mp.put(catalog["Cities"], name, city)
+    if mp.contains(catalog["Cities"], name):
+        lt.addLast(me.getValue(mp.get(catalog["Cities"], name)),city)
+    else:
+        mp.put(catalog["Cities"], name, lt.newList("ARRAY_LIST"))
+        lt.addLast(me.getValue(mp.get(catalog["Cities"], name)),city)
 
-# Funciones para creacion de datos
+def loadMST(catalog):
+    graph = catalog["routesndg"]
+    numNodes = lt.size(gph.vertices(graph))
+    search = prim.PrimMST(graph)
+    totCost = prim.weightMST(graph,search)
+    graphMST = gph.newGraph()
+    for i in lt.iterator(search["mst"]):
+        addToGraph(graphMST,i)
+
+    mst = catalog["MST"]
+
+    mst["TotCost"] = totCost
+    mst["NumNodes"] = numNodes
+    mst["GraphMST"] = graphMST
 
 # Funciones de consulta
 def getLoadingData(catalog):
@@ -170,15 +187,15 @@ def getMostInterconnections(catalog):
     max_dg = 0 
 
     for vertex in lt.iterator(gph.vertices(dg)):
-        indegree = gph.indegree(dg, vertex)
+        indegree = gph.degree(dg, vertex)
         outdegree = gph.outdegree(dg,vertex)
-        if outdegree >= 1:
-            if indegree > max_dg:
-                max_dg = indegree
-                l_dg = lt.newList(datastructure="ARRAY_LIST")
-                lt.addLast(l_dg,vertex)
-            elif indegree == max_dg:
-                lt.addLast(l_dg, vertex)
+        degree = indegree+outdegree
+        if degree > max_dg:
+            max_dg = degree
+            l_dg = lt.newList(datastructure="ARRAY_LIST")
+            lt.addLast(l_dg,vertex)
+        elif degree == max_dg:
+            lt.addLast(l_dg, vertex)
 
     max_g = 0
     for vertex in lt.iterator(gph.vertices(g)):
@@ -199,9 +216,7 @@ def getMostInterconnections(catalog):
     
     return (max_dg, l_dg),(max_g, l_g)
 
-def mapFunc(l, func):
-    for i in range(1,lt.size(l)+1):
-        lt.changeInfo(l,i, func(lt.getElement(l,i)))
+
 
 def getFlightTrafficClusters(catalog, IATA1, IATA2):
     kscc = scc.KosarajuSCC(catalog["routesdg"])
@@ -213,7 +228,8 @@ def getFlightTrafficClusters(catalog, IATA1, IATA2):
 def getShortestRoute(catalog, city1, city2):
     #https://stackoverflow.com/questions/1253499/simple-calculations-for-working-with-lat-lon-and-km-distance formula grado/km
     
-    min_disto,airOrigin,min_distd,airDest = findNearestAirports(catalog,city1, city2)
+    min_disto,airOrigin = findNearestAirport(catalog,city1)
+    min_distd,airDest = findNearestAirport(catalog, city2)
 
     IATAo = airOrigin["IATA"]
     IATAd = airDest["IATA"]
@@ -226,18 +242,57 @@ def getShortestRoute(catalog, city1, city2):
 
     return airOrigin, airDest, routePath, distancePath,min_disto, min_distd
 
-def req4(catalog):
-    IATA = 'MID'
-    millas = 3000
-    km = millas*1.6
+def getUseFlyerMiles(catalog, city, miles):
+    km = miles*1.60
+    mst = catalog["MST"]
+    numNodes = mst["NumNodes"]
+    totCost = mst["TotCost"]
+    graphMST = mst["GraphMST"]
 
-    MST = prim.PrimMST(catalog["routesndg"])
+    md,airport = findNearestAirport(catalog, city,False)
+    IATA = airport["IATA"]
 
+    bfsSearch = BreadhtFisrtSearch(graphMST, IATA)
+    maxDist = getLongestBranch(bfsSearch)
+    maxVertex = me.getKey(lt.getElement(me.getValue(mp.get(bfsSearch["DisToSource"],maxDist)),1))
+    rMaxBranch = bfs.pathTo(bfsSearch,maxVertex)
+    
+    dest = None
+    weight = km
+    for i in range(maxDist,0,-1):
+        lst = me.getValue(mp.get(bfsSearch["DisToSource"],i))
+        for j in lt.iterator(lst):
+            weightTo = getWeightTo(me.getValue(j))
+            if weightTo <= weight:
+                dest = j
+                weight = weightTo
+    
+        if dest is not None:
+            break
+    
+    if dest is not None:
+        route = bfs.pathTo(bfsSearch, dest["key"])
+        routeList = lt.newList("ARRAY_LIST")
+        for air in lt.iterator(route):
+            infoair = me.getValue(mp.get(catalog["IATA2name"],air))
+            cityr, country = infoair["City"], infoair["Country"]
+            lt.addLast(routeList,(cityr,country))
+        return (1, numNodes, totCost, rMaxBranch, routeList)
+    else:
+        return 2, numNodes, totCost, rMaxBranch
 
-    MST = prim.edgesMST(catalog["routesndg"], MST)
-    return MST
 
 #Funciones auxiliares
+def checkCity(catalog, city):
+    if mp.contains(catalog["Cities"], city):
+        cities = me.getValue(mp.get(catalog["Cities"],city))
+        if lt.size(cities) > 1:
+            return 1,cities
+        else:
+            return 2, lt.getElement(me.getValue(mp.get(catalog["Cities"],city)),1)
+    else:
+        return False
+
 def haversine(lat1, lon1, lat2, lon2):
     #https://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points
     R = 6372.8 # this is in miles.  For Earth radius in kilometers use 6372.8 km
@@ -248,6 +303,10 @@ def haversine(lat1, lon1, lat2, lon2):
     a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
     c = 2*asin(sqrt(a))
     return R * c
+
+def mapFunc(l, func):
+    for i in range(1,lt.size(l)+1):
+        lt.changeInfo(l,i, func(lt.getElement(l,i)))
 
 def findNearestAirports(catalog, city1, city2):
     city1 = me.getValue(mp.get(catalog["Cities"], city1))
@@ -301,7 +360,146 @@ def findNearestAirports(catalog, city1, city2):
         r += 10
     return (min_disto, airOrigin, min_distd, airDest)
 
+def BreadhtFisrtSearch(graph, source):
+    """
+    Genera un recorrido BFS sobre el grafo graph
+    Args:
+        graph:  El grafo a recorrer
+        source: Vertice de inicio del recorrido.
+    Returns:
+        Una estructura para determinar los vertices
+        conectados a source
+    Raises:
+        Exception
+    """
+    
+    search = {
+              'source': source,
+              'visited': None,
+              'MaxDist':0,
+              "DisToSource": None
+              }
+    search['visited'] = mp.newMap(numelements=gph.numVertices(graph),
+                                   maptype='PROBING',
+                                   comparefunction=graph['comparefunction']
+                                   )
+    search['DisToSource'] = mp.newMap(numelements=gph.numVertices(graph),
+                                   maptype='PROBING',
+                                   comparefunction=graph['comparefunction']
+                                   )
+    mp.put(search['visited'], source, {'marked': True,
+                                        'edgeTo': None,
+                                        'distTo': 0,
+                                        "weightTo":0
+                                        })
+    mp.put(search["DisToSource"], 0, mp.get(search["visited"],source))
+    bfsVertex(search, graph, source)
+    return search
 
+
+def bfsVertex(search, graph, source):
+    """
+    Funcion auxiliar para calcular un recorrido BFS
+    Args:
+        search: Estructura para almacenar el recorrido
+        vertex: Vertice de inicio del recorrido.
+    Returns:
+        Una estructura para determinar los vertices
+        conectados a source
+    Raises:
+        Exception
+    """
+    
+    adjsqueue = queue.newQueue()
+    queue.enqueue(adjsqueue, source)
+    while not (queue.isEmpty(adjsqueue)):
+        vertex = queue.dequeue(adjsqueue)
+        visited_v = mp.get(search['visited'], vertex)['value']
+        adjslst = gph.adjacents(graph, vertex)
+        for w in lt.iterator(adjslst):
+            visited_w = mp.get(search['visited'], w)
+            if visited_w is None:
+                dist_to_w = visited_v['distTo'] + 1
+                if dist_to_w > search["MaxDist"]:
+                    search["MaxDist"] = dist_to_w
+                weight_to_w = visited_v["weightTo"] + e.weight(gph.getEdge(graph, vertex, w))
+                visited_w = {'marked': True,
+                             'edgeTo': vertex,
+                             "distTo": dist_to_w,
+                             "weightTo": weight_to_w
+                             }
+                mp.put(search['visited'], w, visited_w)
+                if mp.contains(search["DisToSource"], dist_to_w):
+                    lt.addLast(me.getValue(mp.get(search["DisToSource"],dist_to_w)),me.newMapEntry(w, visited_w))
+                else:
+                    mp.put(search["DisToSource"],dist_to_w, lt.newList("ARRAY_LIST"))
+                    lt.addLast(me.getValue(mp.get(search["DisToSource"],dist_to_w)),me.newMapEntry(w,visited_w))
+                
+                queue.enqueue(adjsqueue, w)
+    return search
+
+def getLongestBranch(search):
+    return search["MaxDist"]
+
+def getWeightTo(visited):
+    return visited["weightTo"]
+
+
+def addToGraph(graph, edge):
+    vertexA = edge["vertexA"]
+    vertexB = edge["vertexB"]
+    weight = edge["weight"]
+
+    if gph.containsVertex(graph,vertexA) and gph.containsVertex(graph,vertexB):
+        gph.addEdge(graph,vertexA,vertexB, weight)
+    elif not gph.containsVertex(graph,vertexA) and not gph.containsVertex(graph,vertexB):
+        gph.insertVertex(graph,vertexA)
+        gph.insertVertex(graph,vertexB)
+        gph.addEdge(graph,vertexA,vertexB,weight)
+    elif not gph.containsVertex(graph,vertexA):
+        gph.insertVertex(graph,vertexA)
+        gph.addEdge(graph,vertexA,vertexB,weight)
+    else:
+        gph.insertVertex(graph,vertexB)
+        gph.addEdge(graph,vertexA,vertexB,weight)
+
+def findNearestAirport(catalog, city1, typeG = True):
+    # city1 = me.getValue(mp.get(catalog["Cities"], city1))
+
+
+    olat, olong = float(city1["lat"]), float(city1["lng"])
+
+    treeLat = catalog["TreeAirports"]
+
+    foundAirport = False
+    r = 10
+    typeGraph = "routesdg" if typeG else "routesndg"
+
+    airOrigin = None
+    min_disto = float("inf")
+    while not foundAirport and r <= 1000:
+        olatSquare = r//2 * 0.009
+        olongSquare = r//2 * (abs(0.009/math.cos(olat*(math.pi/180))))
+
+
+        olatmin, olatmax = olat-olatSquare, olat+olatSquare
+        olongmin, olongmax = olong-olongSquare, olong+olongSquare
+
+        if airOrigin is None:
+            for treeLong in lt.iterator(om.values(treeLat, olatmin, olatmax)):
+                for airport in lt.iterator(om.values(treeLong, olongmin, olongmax)):
+                    dist = haversine(airport["Latitude"], airport["Longitude"], olat, olong)
+                    if gph.containsVertex(catalog[typeGraph], airport["IATA"]):
+                        if dist < min_disto:
+                            min_disto = dist
+                            airOrigin = airport
+            
+        
+        if (airOrigin is not None):
+            foundAirport = True
+
+        r += 10
+    return min_disto, airOrigin
 # Funciones utilizadas para comparar elementos dentro de una lista
 
 
