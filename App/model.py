@@ -281,6 +281,69 @@ def getUseFlyerMiles(catalog, city, miles):
     else:
         return 2, numNodes, totCost, rMaxBranch
 
+def getCalculateClosedAirportEffect(catalog, air):
+    dgraph = catalog["routesdg"]
+    destiny = lt.newList("ARRAY_LIST")
+    origin = lt.newList("ARRAY_LIST")
+    for vertex in lt.iterator(gph.vertices(dgraph)):
+        if vertex == air:
+            adj = gph.adjacents(dgraph, vertex)
+            for i in lt.iterator(adj):
+                lt.addLast(destiny, i)
+        else:
+            adj = gph.adjacents(dgraph,vertex)
+            if lt.isPresent(adj, air):
+                lt.addLast(origin, vertex)
+
+    totAffected = lt.size(destiny)+lt.size(origin)
+
+    return destiny, origin, totAffected
+
+def getShortestRouteAPI(catalog, origen, destino, client):
+    clientAM = client
+
+
+    latO, longO = float(origen["lat"]), float(origen["lng"])
+    latD, longD = float(destino["lat"]), float(destino["lng"])
+
+    responseO = clientAM.reference_data.locations.airports.get(latitude=latO, longitude =longO)
+
+    responseD = clientAM.reference_data.locations.airports.get(latitude=latD, longitude =longD)
+    dg = catalog["routesdg"]
+
+    if len(responseD.data) > 0 and len(responseO.data) > 0:
+        airo = None
+        disto = 0
+        for i in responseO.data:
+            iata = i["iataCode"]
+            if gph.containsVertex(dg,iata):
+                airo = iata
+                disto = i["distance"]["value"]
+                break
+        aird = None
+        distd = 0
+        for i in responseD.data:
+            iata = i["iataCode"]
+            if gph.containsVertex(dg,iata):
+                aird = iata
+                distd = i["distance"]["value"]
+                break
+        
+        if (airo is not None) and (aird is not None):
+
+            path = dijsktra.Dijkstra(dg, airo)
+            if dijsktra.hasPathTo(path, aird):
+                route = dijsktra.pathTo(path, aird)
+                dist = dijsktra.distTo(path, aird)
+                return airo, aird, route, dist, disto, distd
+            else:
+                return False, 1 , "No hay una ruta entre los dos aeropuertos", airo, aird, disto, distd
+        else:
+            return False, 2,"No hay información en la base datos sobre alguno o los dos aeropuertos proporcionado por el API"
+        
+    else:
+        return (False, 3, "El API no retorno información sobre alguna de las ciudades")
+
 
 #Funciones auxiliares
 def checkCity(catalog, city):

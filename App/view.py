@@ -154,12 +154,36 @@ def printFlyerMiles(req4):
     else:
         print("Con las millas actual no es posible viajar a ninguna ciudad")
 
+def printCalculateClosedAirportEffect(catalog,req5,air):
+    print(f"El numero total de aeropuertos afectados por el cierre de {air} es {req5[2]}")
+
+    print(f"Hay dos tipos de aeropuertos afectados, los que tenian vuelos hacia {air} (Origen) y los que recibian vuelos de {air} (Destino)")
+    tableA = PrettyTable(["Num","IATA", "Name", "City","Country" ,"Tipo"])
+    tableA.hrules = pt.ALL
+    i = 1
+    for airO in lt.iterator(req5[1]):
+        row = [i]
+        for key in tableA.field_names[1:-1]:
+            row.append(me.getValue(mp.get(catalog["IATA2name"],airO))[key])
+        row.append("Origen")
+        tableA.add_row(row)
+        i+=1
+        
+    for airD in lt.iterator(req5[0]):
+        row = [i]
+        for key in tableA.field_names[1:-1]:
+            row.append(me.getValue(mp.get(catalog["IATA2name"],airD))[key])
+        row.append("Destino")
+        tableA.add_row(row)
+        i+=1
+    
+    print(tableA)
+
 def printSelectCity(cities):
     print("Seleccione la ciudad que desee")
     citiesT = PrettyTable(["Option", "City","State", "Country"])
     citiesT.hrules = pt.ALL
     citiesT.align = "c"
-    print(cities)
     for i, city in enumerate(lt.iterator(cities),1):
         citiesT.add_row([i,city["city_ascii"],city["admin_name"],city["country"]])
     print(citiesT,end="\n\n")
@@ -239,10 +263,34 @@ while True:
         
     
     elif int(inputs[0]) == 7:
-        pass
+        air = input("Ingrese el codigo IATA del aeropuerto del cual desea cuantificar el efecto: ")
+        req5 = controller.getCalculateClosedAirportEffect(catalog,air)
+        printCalculateClosedAirportEffect(catalog,req5,air)
 
     elif int(inputs[0]) == 8:
-        pass
+        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes)")
+        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
+
+        vcity1 = controller.checkCity(catalog,city1)
+        vcity2 = controller.checkCity(catalog,city2)
+
+        if vcity1 and vcity2:
+            if vcity1[0] == 1:
+                vcity1 = printSelectCity(vcity1[1])
+            else:
+                vcity1 = vcity1[1]
+
+            if vcity2[0] == 1:
+                vcity2 = printSelectCity(vcity2[1])
+            else:
+                vcity2 = vcity2[1]
+            req6 = controller.getShortestRoute(catalog, vcity1, vcity2)
+            if req6[0]:
+                printShortestRoute(catalog,req6,city1,city2)
+            else:
+                print(req6[2])
+        else:
+            print("Lo siento alguna o las dos ciudades suministradas no se encuentran en la base de datos")
 
     elif int(inputs[0]) == 9:
         pass

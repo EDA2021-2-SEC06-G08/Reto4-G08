@@ -87,5 +87,11 @@ def getShortestRoute(catalog, city1, city2):
 def getFlyerMiles(catalog,city,miles):
     return model.getUseFlyerMiles(catalog,city,miles)
 
+def getCalculateClosedAirportEffect(catalog, air):
+    return model.getCalculateClosedAirportEffect(catalog, air)
+
+def getShortestRouteAPI(catalog, origen, destino, cliente):
+    return model.getShortestRouteAPI(catalog, origen, destino, cliente)
+
 def checkCity(catalog, city):
     return model.checkCity(catalog, city)

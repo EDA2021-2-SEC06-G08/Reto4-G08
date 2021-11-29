@@ -1,0 +1,3 @@
+prettytable==2.4.0
+folium==0.12.1
+amadeus==5.1.0
