@@ -137,7 +137,7 @@ def add_route(catalog, route):
         
         if catalog["1AirportG"] is None:
             catalog["1AirportG"] = departure
-        mp.put(catalog["DRg"], routeOrder, None)
+        mp.put(catalog["DRg"], routeOrder, float(route["distance_km"]))
 
 def add_city(catalog, city):
     name = city["city_ascii"]
@@ -818,7 +818,7 @@ def create_client(key, secretK):
 def makeDGraph(catalog):
     dg = catalog["routesdg"]
     air = lambda iata : me.getValue(mp.get(catalog["IATA2name"], iata))
-    m = folium.Map(location=(0,0),zoom_start=2.2)
+    m = folium.Map(location=(0,0),zoom_start=2.2,prefer_canvas=True)
 
     for i in lt.iterator(gph.edges(dg)):
         ori,dest,dist = i.values()
@@ -828,14 +828,12 @@ def makeDGraph(catalog):
         dcoords = [float(dest["Latitude"]),float(dest["Longitude"])]
         airo = ori["Name"]
         aird = dest["Name"]
-        folium.PolyLine((ocoords, dcoords),weight=0.2).add_to(m)
-        folium.Marker(ocoords,tooltip=airo, icon=folium.Icon(icon="plane",prefix="fa")).add_to(m)
-        folium.Marker(dcoords,tooltip=aird, icon=folium.Icon(icon="plane",prefix="fa")).add_to(m)
-    m.save("Digrafo.html")
+        folium.PolyLine((ocoords, dcoords),weight=0.2,tooltip=f"{airo} to {aird}, Distance: {dist} km").add_to(m)
+    m.save(cf.file_dir+"/Maps/Graphs/Digrafo.html")
 
 def makeNDGraph(catalog):
     air = lambda iata : me.getValue(mp.get(catalog["IATA2name"], iata))
-    m = folium.Map(location=(0,0),zoom_start=2.2)
+    m = folium.Map(location=(0,0),zoom_start=2.2,prefer_canvas=True)
     for i in lt.iterator(mp.keySet(catalog["DRg"])):
         air1,air2 = i
         dist = me.getValue(mp.get(catalog["DRg"],i))
@@ -845,9 +843,7 @@ def makeNDGraph(catalog):
         coord2 = float(air2["Latitude"]), float(air2["Longitude"])
         coords  = coord1,coord2
         folium.PolyLine(coords, weight=0.5,color="green" ,tooltip=f"{air1['Name']} - {air2['Name']}, Distance: {dist} km").add_to(m)
-        folium.Marker(coord1,tooltip=air1["Name"], icon=folium.Icon(icon="plane",prefix="fa")).add_to(m)
-        folium.Marker(coord2,tooltip=air2["Name"], icon=folium.Icon(icon="plane",prefix="fa")).add_to(m)
-    m.save("NDGraph.html")
+    m.save(cf.file_dir+"/Maps/Graphs/NDGraph.html")
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista

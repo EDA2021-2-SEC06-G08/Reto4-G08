@@ -51,7 +51,6 @@ def printMenu():
     print("7. REQ. 5: Cuantificar el efecto de un aeropuerto cerrado")  
     print("8. REQ. 6 (BONO): Comparar con servicio WEB externo")  
     print("9. REQ. 7 (BONO): Visualizar gráficamente los requerimientos") 
-    print("10. Crear Mapas de los grafos. ")
     print("0- Salir")
 
 def printLoadingData(data):
@@ -242,6 +241,7 @@ Menu principal
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
+ 
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         catalog = controller.create_catalog()
@@ -251,6 +251,9 @@ while True:
         controller.loadData(catalog)
         data = controller.getLoadingData(catalog)
         printLoadingData(data)
+        var = input("Ingrese \"Si\" si desea crear un mapa de los grafo (Esto puede tomar varios minutos)")
+        if var == "Si":
+            controller.makeGraphs(catalog)
 
     elif int(inputs[0]) == 3:
         req1 = controller.getMostInterconnections(catalog)
@@ -361,10 +364,6 @@ while True:
     elif int(inputs[0]) == 9:
         pass
 
-    elif int(inputs[0]) == 10:
-        var = input("Ingrese \"Si\" si desea crear un mapa de los grafo (Esto puede tomar varios minutos)")
-        if var == "Si":
-            controller.makeGraphs(catalog)
 
     else:
         sys.exit(0)
