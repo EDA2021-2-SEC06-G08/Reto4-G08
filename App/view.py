@@ -20,13 +20,13 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
-from types import coroutine
 from prettytable.prettytable import PrettyTable
 import config as cf
 import sys
 import controller
 from prettytable import PrettyTable
 import prettytable as pt
+import privateInfo as secret 
 from DISClib.ADT import list as lt, map as mp
 from DISClib.DataStructures import mapentry as me
 assert cf
@@ -51,6 +51,7 @@ def printMenu():
     print("7. REQ. 5: Cuantificar el efecto de un aeropuerto cerrado")  
     print("8. REQ. 6 (BONO): Comparar con servicio WEB externo")  
     print("9. REQ. 7 (BONO): Visualizar gráficamente los requerimientos") 
+    print("10. Crear Mapas de los grafos. ")
     print("0- Salir")
 
 def printLoadingData(data):
@@ -139,17 +140,17 @@ def printFlyerMiles(req4):
         else:
             print(i)
     if req4[0] == 1:   
-        routeTable = PrettyTable(["Pos", "Ciudad", "Pais"])
+        routeTable = PrettyTable(["Pos", "Aeropuerto","Ciudad","Pais"])
         tam = lt.size(req4[4])
         routeTable.hrules = pt.ALL
         print("Ruta optima con las millas disponibles")
         for pos, i in enumerate(lt.iterator(req4[4])):
             if pos == 0:
-                routeTable.add_row(["Origen", i[0], i[1]])
+                routeTable.add_row(["Origen", i[0], i[1], i[2]])
             elif pos == tam-1:
-                routeTable.add_row(["Destino", i[0], i[1]])
+                routeTable.add_row(["Destino", i[0], i[1], i[2]])
             else:
-                routeTable.add_row(["Parada", i[0], i[1]])
+                routeTable.add_row(["Parada", i[0], i[1], i[2]])
         print(routeTable)
     else:
         print("Con las millas actual no es posible viajar a ninguna ciudad")
@@ -157,11 +158,11 @@ def printFlyerMiles(req4):
 def printCalculateClosedAirportEffect(catalog,req5,air):
     print(f"El numero total de aeropuertos afectados por el cierre de {air} es {req5[2]}")
 
-    print(f"Hay dos tipos de aeropuertos afectados, los que tenian vuelos hacia {air} (Origen) y los que recibian vuelos de {air} (Destino)")
+    print(f"Hay dos tipos de aeropuertos afectados, los que tenian vuelos hacia {air} (Destino) y los que recibian vuelos de {air} (Origen)")
     tableA = PrettyTable(["Num","IATA", "Name", "City","Country" ,"Tipo"])
     tableA.hrules = pt.ALL
     i = 1
-    for airO in lt.iterator(req5[1]):
+    for airO in lt.iterator(req5[0]):
         row = [i]
         for key in tableA.field_names[1:-1]:
             row.append(me.getValue(mp.get(catalog["IATA2name"],airO))[key])
@@ -169,7 +170,7 @@ def printCalculateClosedAirportEffect(catalog,req5,air):
         tableA.add_row(row)
         i+=1
         
-    for airD in lt.iterator(req5[0]):
+    for airD in lt.iterator(req5[1]):
         row = [i]
         for key in tableA.field_names[1:-1]:
             row.append(me.getValue(mp.get(catalog["IATA2name"],airD))[key])
@@ -179,7 +180,49 @@ def printCalculateClosedAirportEffect(catalog,req5,air):
     
     print(tableA)
 
+def printShortestRouteAPI(catalog,req6,origen,destino,req3):
+
+    name = lambda x: me.getValue(mp.get(catalog['IATA2name'],x))['Name']
+    print("\nUtilizando el API de Amadeus se obtuvieron los siguientes resultados: ")
+
+    print(f"\nEl codigo IATA del aeropuerto de origen es {req6[0]}")
+    print(f"El nombre es: {name(req6[0])}")
+
+    print(f"El codigo IATA del aeropuerto de destino es {req6[1]}")
+    print(f"El nombre es: {name(req6[1])}")
+
+    print("La ruta mas corta es la siguiente:")
+    rutaT = PrettyTable(["Origen", "Destino", "Distancia (km)"])
+    rutaT.hrules = pt.ALL
+    for i in lt.iterator(req6[2]):
+        rutaT.add_row([name(i["vertexA"]),name(i["vertexB"]),i["weight"]])
+    print(rutaT)
+
+    print(f"La distancia para llegar a {name(req6[0])} desde {origen} es {round(req6[-2],2)}km")
+    print(f"La distancia para llegar a {destino} desde {name(req6[1])} es de {round(req6[-1],2)}km")
+    print(f"La distancia total del viaje es {round(req6[-3]+req6[-2]+req6[-1],2)}km\n")
+
+    print("Utilizando los datos de la base de datos se obtuvo: ")
+    if req3[0]:
+        print(f"Los aeropuertos seleccionados fueron {name(req3[0]['IATA'])} para {origen} y {name(req3[1]['IATA'])} para {destino}")
+        printShortestRoute(catalog, req3,origen, destino)
+        totDistAPI = req6[-3]+req6[-2]+req6[-1]
+        totDistDB = req3[-3]+req3[-2]+req3[-1]
+        if totDistDB < totDistAPI:
+            print("Como se puede observar con los resultados de la aplicación la distancia total es menor")
+        elif totDistDB == totDistAPI:
+            print("Para los dos casos las distancias son iguales")
+        else:
+            print("Como se puede observar con los resultados de la API la distancia total es menor")
+        print("")
+    
+    else:
+        print("No se logre calcular una ruta")
+        print(f"Los aeropuertos seleccionados fueron {name(req3[1])} para {origen} y {name(req3[2])} para {destino}")
+        print("")
+
 def printSelectCity(cities):
+    print("")
     print("Seleccione la ciudad que desee")
     citiesT = PrettyTable(["Option", "City","State", "Country"])
     citiesT.hrules = pt.ALL
@@ -187,13 +230,12 @@ def printSelectCity(cities):
     for i, city in enumerate(lt.iterator(cities),1):
         citiesT.add_row([i,city["city_ascii"],city["admin_name"],city["country"]])
     print(citiesT,end="\n\n")
-    opt = int(input("Seleccione una opción"))
+    opt = int(input("Seleccione una opción: "))
     return lt.getElement(cities,opt)
-    
 
 
 catalog = None
-
+req1Map = True
 """
 Menu principal
 """
@@ -203,6 +245,7 @@ while True:
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         catalog = controller.create_catalog()
+        client = controller.create_client(secret.KEY, secret.SECRET)
         
     elif int(inputs[0]) == 2:
         controller.loadData(catalog)
@@ -212,6 +255,9 @@ while True:
     elif int(inputs[0]) == 3:
         req1 = controller.getMostInterconnections(catalog)
         printMostInterconnections(req1)
+        if req1Map :
+            controller.makeMapReq1(req1,catalog)
+            req1Map = False
     
     elif int(inputs[0]) == 4:
         IATA1 = input("Ingrese el codigo IATA del primer aeropuerto (en mayusculas): ")
@@ -219,12 +265,15 @@ while True:
         try:
             req2 = controller.getFlightTrafficClusters(catalog,IATA1,IATA2)
             printFlightTrafficClusters(req2, IATA1, IATA2)
+            mapReq2 = input("Ingrese \"Si\" para crear un mapa del requerimiento: ")
+            if mapReq2 == "Si":
+                controller.makeMapReq2(catalog, req2[2],req2[1],IATA1,IATA2)
         except Exception as ex:
             print("Lo siento, no tengo la información de los aeropuertos en mi base de datos")
     
     elif int(inputs[0]) == 5:
-        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes)")
-        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
+        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes): ")
+        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes): ")
 
         vcity1 = controller.checkCity(catalog,city1)
         vcity2 = controller.checkCity(catalog,city2)
@@ -240,12 +289,18 @@ while True:
             else:
                 vcity2 = vcity2[1]
             req3 = controller.getShortestRoute(catalog, vcity1, vcity2)
-            printShortestRoute(catalog,req3,city1,city2)
+            if req3[0]:
+                printShortestRoute(catalog,req3,city1,city2)
+                mapReq3 = input("Ingrese \"Si\" para crear un mapa del requerimiento: ")
+                if mapReq3 == "Si":
+                    controller.makeMapReq3(catalog,vcity1,vcity2,req3[-2],req3[-1],req3[0],req3[1],req3[2])
+            else:
+                print("No se pudo encontrar una ruta")
         else:
             print("Lo siento alguna o las dos ciudades suministradas no se encuentran en la base de datos")
     
     elif int(inputs[0]) == 6:
-        city = input("Ingrese la ciudad de donde parte:")
+        city = input("Ingrese la ciudad de donde parte: ")
         valid = controller.checkCity(catalog, city)
         if valid:
             if valid[0] == 1:
@@ -257,6 +312,10 @@ while True:
             
             req4 = controller.getFlyerMiles(catalog, city, miles)
             printFlyerMiles(req4)
+            if req4[0] == 1:
+                mapReq4 = input("Ingrese \"Si\" para crear un mapa del requerimiento: ")
+                if mapReq4 == "Si":
+                    controller.makeMapReq4(catalog,req4)
         else:
             print("Lo siento la ciudad ingresa no esta en mi base de datos")
 
@@ -264,12 +323,18 @@ while True:
     
     elif int(inputs[0]) == 7:
         air = input("Ingrese el codigo IATA del aeropuerto del cual desea cuantificar el efecto: ")
-        req5 = controller.getCalculateClosedAirportEffect(catalog,air)
-        printCalculateClosedAirportEffect(catalog,req5,air)
+        try:
+            req5 = controller.getCalculateClosedAirportEffect(catalog,air)
+            printCalculateClosedAirportEffect(catalog,req5,air)
+            mapReq5 = input("Ingrese \"Si\" para crear un mapa del requerimiento: ")
+            if mapReq5 == "Si":
+                    controller.makeMapReq5(req5,air,catalog)
+        except Exception:
+            print("Lo siento el codigo IATA indicado no esta en mi base de datos")
 
     elif int(inputs[0]) == 8:
-        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes)")
-        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes)")
+        city1 = input("Ingrese el nombre de la ciudad de origen (no utilice simbolos como tildes) ")
+        city2 = input("Ingrese el nombre de la ciudad de destino (no utilice simbolos como tildes) ")
 
         vcity1 = controller.checkCity(catalog,city1)
         vcity2 = controller.checkCity(catalog,city2)
@@ -284,9 +349,10 @@ while True:
                 vcity2 = printSelectCity(vcity2[1])
             else:
                 vcity2 = vcity2[1]
-            req6 = controller.getShortestRoute(catalog, vcity1, vcity2)
+            req6 = controller.getShortestRouteAPI(catalog, vcity1, vcity2,client)
             if req6[0]:
-                printShortestRoute(catalog,req6,city1,city2)
+                req3 = controller.getShortestRoute(catalog, vcity1, vcity2)
+                printShortestRouteAPI(catalog,req6,city1,city2,req3)
             else:
                 print(req6[2])
         else:
@@ -294,6 +360,11 @@ while True:
 
     elif int(inputs[0]) == 9:
         pass
+
+    elif int(inputs[0]) == 10:
+        var = input("Ingrese \"Si\" si desea crear un mapa de los grafo (Esto puede tomar varios minutos)")
+        if var == "Si":
+            controller.makeGraphs(catalog)
 
     else:
         sys.exit(0)

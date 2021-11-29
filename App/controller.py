@@ -75,6 +75,9 @@ def loadMST(catalog):
 def getLoadingData(catalog):
     return model.getLoadingData(catalog)
 
+def create_client(key, secretK):
+    return model.create_client(key, secretK)
+
 def getMostInterconnections(catalog):
     return model.getMostInterconnections(catalog)
 
@@ -95,3 +98,22 @@ def getShortestRouteAPI(catalog, origen, destino, cliente):
 
 def checkCity(catalog, city):
     return model.checkCity(catalog, city)
+
+def makeMapReq1(data,catalog):
+    model.makeMapReq1(data,catalog)
+
+def makeMapReq2(catalog, kscc, connected, IATA1, IATA2):
+    model.makeMapReq2(catalog, kscc, connected, IATA1, IATA2)
+
+def makeMapReq3(catalog, city1,city2, min_disto, min_distd, airOrigin, airDest, routePath):
+    model.makeMapReq3(catalog, city1,city2, min_disto, min_distd, airOrigin, airDest, routePath)
+
+def makeMapReq4(catalog, data):
+    model.makeMapReq4(catalog,data)
+
+def makeMapReq5(data, airC, catalog):
+    model.makeMapReq5(data, airC, catalog)
+
+def makeGraphs(catalog):
+    model.makeDGraph(catalog)
+    model.makeNDGraph(catalog)

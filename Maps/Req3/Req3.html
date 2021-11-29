@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_b557bc09ddd8484e9dd2f3be3c5dd169 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+            </style>
+        
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_b557bc09ddd8484e9dd2f3be3c5dd169" ></div>
+        
+</body>
+<script>    
+    
+            var map_b557bc09ddd8484e9dd2f3be3c5dd169 = L.map(
+                "map_b557bc09ddd8484e9dd2f3be3c5dd169",
+                {
+                    center: [19.56485, 31.586250000000007],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 3,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_7e684ba386da4b5e9b904ac31936d437 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var marker_050855a035d84836b65368a7a30f3f90 = L.marker(
+                [3.44, -76.5197],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_617e145ece0749d6aacc0b93dcea6a3c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "building", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_050855a035d84836b65368a7a30f3f90.setIcon(icon_617e145ece0749d6aacc0b93dcea6a3c);
+        
+    
+            marker_050855a035d84836b65368a7a30f3f90.bindTooltip(
+                `<div>
+                     Cali
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_697de68618df46f8a1f277a6d95759c0 = L.marker(
+                [35.6897, 139.6922],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_2783145e005849f889136ef22b805ffe = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "building", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_697de68618df46f8a1f277a6d95759c0.setIcon(icon_2783145e005849f889136ef22b805ffe);
+        
+    
+            marker_697de68618df46f8a1f277a6d95759c0.bindTooltip(
+                `<div>
+                     Tokyo
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_9340cfa41be34a19a398e74c4a97144c = L.marker(
+                [3.54322, -76.3816],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_b1d40628214b45a480e1c9434b334ad9 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane", "iconColor": "green", "markerColor": "blue", "prefix": "glyphicon", "prefrix": "fa"}
+            );
+            marker_9340cfa41be34a19a398e74c4a97144c.setIcon(icon_b1d40628214b45a480e1c9434b334ad9);
+        
+    
+            marker_9340cfa41be34a19a398e74c4a97144c.bindTooltip(
+                `<div>
+                     Alfonso Bonilla Aragon International Airport
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5908c00d348d460a973f626b4cb84ff5 = L.marker(
+                [35.552299, 139.779999],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_27c9e43d76494348bed89029d7617bf7 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane", "iconColor": "red", "markerColor": "blue", "prefix": "glyphicon", "prefrix": "fa"}
+            );
+            marker_5908c00d348d460a973f626b4cb84ff5.setIcon(icon_27c9e43d76494348bed89029d7617bf7);
+        
+    
+            marker_5908c00d348d460a973f626b4cb84ff5.bindTooltip(
+                `<div>
+                     Tokyo Haneda International Airport
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_8c25d8573b9d42b08b93274c54ec2a0c = L.polyline(
+                [[3.44, -76.5197], [3.54322, -76.3816]],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "green", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 1}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_8c25d8573b9d42b08b93274c54ec2a0c.bindTooltip(
+                `<div>
+                     Distancia 19.153949548803986 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_7948f96c39dd46c2ac81883f0eca19eb = L.polyline(
+                [[35.6897, 139.6922], [35.552299, 139.779999]],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "green", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 1}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_7948f96c39dd46c2ac81883f0eca19eb.bindTooltip(
+                `<div>
+                     Distancia 17.221345486132474 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_208fe1a360d4407bb889314d16695b46 = L.polyline(
+                [[3.54322, -76.3816], [9.0713596344, -79.3834991455]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_208fe1a360d4407bb889314d16695b46.bindTooltip(
+                `<div>
+                     Alfonso Bonilla Aragon International Airport to Tocumen International Airport, Distance = 698.458 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_daef44ce2e8b47a08b417aa77567fa55 = L.marker(
+                [9.0713596344, -79.3834991455],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_7415612597eb465ebf5d191d9553bf9a = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane", "iconColor": "white", "markerColor": "blue", "prefix": "fa"}
+            );
+            marker_daef44ce2e8b47a08b417aa77567fa55.setIcon(icon_7415612597eb465ebf5d191d9553bf9a);
+        
+    
+            marker_daef44ce2e8b47a08b417aa77567fa55.bindTooltip(
+                `<div>
+                     Tocumen International Airport
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_840335479c1a41f9906a78c236e97a3c = L.polyline(
+                [[9.0713596344, -79.3834991455], [29.98439979553223, -95.34140014648438]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_840335479c1a41f9906a78c236e97a3c.bindTooltip(
+                `<div>
+                     Tocumen International Airport to George Bush Intercontinental Houston Airport, Distance = 2856.456 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_743892fa60f445758072ccc0be8f9ac7 = L.marker(
+                [29.98439979553223, -95.34140014648438],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_5fda8aa0f5614debac8ab197676e99cd = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane", "iconColor": "white", "markerColor": "blue", "prefix": "fa"}
+            );
+            marker_743892fa60f445758072ccc0be8f9ac7.setIcon(icon_5fda8aa0f5614debac8ab197676e99cd);
+        
+    
+            marker_743892fa60f445758072ccc0be8f9ac7.bindTooltip(
+                `<div>
+                     George Bush Intercontinental Houston Airport
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_05bfe71c637d4e1e90f4e561a1419bff = L.polyline(
+                [[29.98439979553223, -95.34140014648438], [47.449001, -122.308998]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_05bfe71c637d4e1e90f4e561a1419bff.bindTooltip(
+                `<div>
+                     George Bush Intercontinental Houston Airport to Seattle Tacoma International Airport, Distance = 3013.405 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_c5579788f47c4015954535c29bd9961f = L.marker(
+                [47.449001, -122.308998],
+                {}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            var icon_5c9166382bf040779b16f8cfbacffe2c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane", "iconColor": "white", "markerColor": "blue", "prefix": "fa"}
+            );
+            marker_c5579788f47c4015954535c29bd9961f.setIcon(icon_5c9166382bf040779b16f8cfbacffe2c);
+        
+    
+            marker_c5579788f47c4015954535c29bd9961f.bindTooltip(
+                `<div>
+                     Seattle Tacoma International Airport
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_710be1ab1dc64b37918841595962e8ca = L.polyline(
+                [[47.449001, -122.308998], [35.552299, 139.779999]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_b557bc09ddd8484e9dd2f3be3c5dd169);
+        
+    
+            poly_line_710be1ab1dc64b37918841595962e8ca.bindTooltip(
+                `<div>
+                     Seattle Tacoma International Airport to Tokyo Haneda International Airport, Distance = 7711.68 km
+                 </div>`,
+                {"sticky": true}
+            );
+        
+</script>
