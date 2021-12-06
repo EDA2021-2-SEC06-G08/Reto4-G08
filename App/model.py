@@ -247,9 +247,6 @@ def getMostInterconnections(catalog):
     
     mapFunc(l_dg, lambda x: me.getValue(mp.get(mapIATA,x)))
     mapFunc(l_g, lambda x: me.getValue(mp.get(mapIATA,x)))
-
-    
-    
     return (max_dg, l_dg),(max_g, l_g)
 
 
@@ -278,6 +275,7 @@ def getShortestRoute(catalog, city1, city2):
         return airOrigin, airDest, routePath, distancePath,min_disto, min_distd
     else:
         return False, airOrigin, airDest
+
 
 def getUseFlyerMiles(catalog, city, miles):
     km = miles*1.60
@@ -337,8 +335,7 @@ def getCalculateClosedAirportEffect(catalog, air):
     return destiny, origin, totAffected
 
 
-#Bono
-
+#Bonos
 def getShortestRouteAPI(catalog, origen, destino, client):
     clientAM = client
 
@@ -738,7 +735,6 @@ def getLongestBranch(search):
 def getWeightTo(visited):
     return visited["weightTo"]
 
-
 def addToGraph(graph, edge):
     vertexA = edge["vertexA"]
     vertexB = edge["vertexB"]
@@ -759,7 +755,6 @@ def addToGraph(graph, edge):
 
 def findNearestAirport(catalog, city1, typeG = True):
     # city1 = me.getValue(mp.get(catalog["Cities"], city1))
-
 
     olat, olong = float(city1["lat"]), float(city1["lng"])
 
@@ -828,9 +823,3 @@ def makeNDGraph(catalog):
         folium.PolyLine(coords, weight=0.5,color="green" ,tooltip=f"{air1['Name']} - {air2['Name']}, Distance: {dist} km").add_to(m)
     m.save(cf.file_dir+"/Maps/Graphs/NDGraph.html")
 
-
-# Funciones utilizadas para comparar elementos dentro de una lista
-
-
-
-# Funciones de ordenamiento
