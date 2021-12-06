@@ -41,9 +41,10 @@ def loadData(catalog):
     loadGraphs(catalog)
     loadCities(catalog)
     loadMST(catalog)
+    loadSCC(catalog)
 
 def loadTables(catalog):
-    file = cf.data_dir + "Skylines/airports_full.csv"
+    file = cf.data_dir + "Skylines/airports-utf8-small.csv"
     airports = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
 
     for airport in airports:
@@ -51,7 +52,7 @@ def loadTables(catalog):
 
 
 def loadGraphs(catalog):
-    file = cf.data_dir + "Skylines/routes_full.csv"
+    file = cf.data_dir + "Skylines/routes-utf8-small.csv"
     routes = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
 
     for route in routes:
@@ -59,7 +60,7 @@ def loadGraphs(catalog):
 
 
 def loadCities(catalog):
-    file = cf.data_dir + "Skylines/worldcities.csv"
+    file = cf.data_dir + "Skylines/worldcities-utf8.csv"
     cities = csv.DictReader(open(file, encoding="utf-8"), delimiter=",")
 
     for city in cities:
@@ -67,6 +68,9 @@ def loadCities(catalog):
 
 def loadMST(catalog):
     model.loadMST(catalog)
+
+def loadSCC(catalog):
+    model.loadSCC(catalog)
 
 # Funciones de ordenamiento
 

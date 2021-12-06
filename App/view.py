@@ -54,24 +54,39 @@ def printMenu():
     print("0- Salir")
 
 def printLoadingData(data):
-    print(f"El numero total de aeropuertos para el dígrafo es: {data['#AirDG']}")
-    print(f"El numero total de aeropuertos para el grafo no dirigido es: {data['#AirG']}")
-    print(f"El numero total de ciudades es: {data['#Cities']}")
-
-    print(f"\nInformación primer aeropuerto dígrafo:")
-    dgTable = PrettyTable("Name,City,Country,Latitude,Longitude".split(","))
+    print("=== Airports-Routes DiGraph ===")
+    print(f"Nodes: {data['#AirDG']}")
+    print(f"Edges: {data['#RoutesDG']}")
+  
+    print("First & Last Airport loaded in the DiGraph.")
+    dgTable = PrettyTable("IATA,Name,City,Country,Latitude,Longitude".split(","))
+    dgTable.hrules = pt.ALL
     row = [data["FirstAirportDG"][i] for i in dgTable.field_names]
+    dgTable.add_row(row)
+    row = [data["LastAirportDG"][i] for i in dgTable.field_names]
     dgTable.add_row(row)
     print(dgTable)
 
-    print(f"\nInformación primer aeropuerto grafo no dirigido:")
-    gTable = PrettyTable("Name,City,Country,Latitude,Longitude".split(","))
+    print("=== Airports-Routes Graph ===")
+    print(f"Nodes: {data['#AirG']}")
+    print(f"Edges: {data['#RoutesG']}")
+  
+    print(f"First & Last Airport loaded in the Graph.")
+    gTable = PrettyTable("IATA,Name,City,Country,Latitude,Longitude".split(","))
+    gTable.hrules = pt.ALL
     row = [data["FirstAirportG"][i] for i in gTable.field_names]
+    gTable.add_row(row)
+    row = [data["LastAirportG"][i] for i in gTable.field_names]
     gTable.add_row(row)
     print(gTable)
 
+    print("\n\n=== City Network ===")
+    print(f"The number of cities are: {data['#Cities']}")
     print("\nInformacíon de la ultima ciudad cargada")
-    cTable = PrettyTable(["city_ascii","lat","lng","population"])
+    cTable = PrettyTable(["city","country","lat","lng","population"])
+    cTable.hrules = pt.ALL
+    row = [data["FirstCity"][i] for i in cTable.field_names]
+    cTable.add_row(row)
     row = [data["LastCity"][i] for i in cTable.field_names]
     cTable.add_row(row)
     print(cTable)
@@ -251,7 +266,7 @@ while True:
         controller.loadData(catalog)
         data = controller.getLoadingData(catalog)
         printLoadingData(data)
-        var = input("Ingrese \"Si\" si desea crear un mapa de los grafo (Esto puede tomar varios minutos)")
+        var = input("Ingrese \"Si\" si desea crear un mapa de los grafo (Esto puede tomar varios minutos): ")
         if var == "Si":
             controller.makeGraphs(catalog)
 

@@ -53,12 +53,20 @@ def create_catalog():
         "MST": {"TotCost":None, "NumNodes":None, "GraphMST":None},
         "IATA2name" : mp.newMap(10000,maptype="PROBING"),
         "DuplicateRoute" : mp.newMap(50000,maptype="PROBING"),
+        "RouteAir" : mp.newMap(50000,maptype="PROBING"),
+        "#RoutesDG" : 0,
+        "#RoutesG" : 0,
         "Cities": mp.newMap(41002,maptype="PROBING"),
         "DRg" : mp.newMap(10000,maptype="PROBING"),
         "TreeAirports" : om.newMap(),
         "1AirportDG" : None,
+        "LastAirportDG" : None,
         "1AirportG" : None,
-        "LastCity" : None
+        "LastAirportG" : None,
+        "FirstCity" : None,
+        "LastCity" : None,
+        "NumCities" : 0,
+        "SCC":None
 
     }
 
@@ -91,62 +99,79 @@ def add_airport(catalog, airport):
         if not om.contains(arbolLong, Long):
             om.put(arbolLong, Long, clean)
 
+    gph.insertVertex(catalog["routesdg"], IATA)
+    if catalog["1AirportDG"] is None:
+        catalog["1AirportDG"] = IATA
+    catalog["LastAirportDG"] = IATA
+
+
+    
+
 
 
 def add_route(catalog, route):
+    air = route["Airline"]
     departure = route["Departure"]
     destination = route["Destination"]
 
     dgraph = catalog["routesdg"]
     graph = catalog["routesndg"]
 
-    routeOrder = tuple(sorted((departure, destination)))
+    mp.put(catalog["RouteAir"], (air,departure,destination),None)
+    if mp.contains(catalog["RouteAir"], (air,destination, departure)):
+        catalog["#RoutesG"] += 1
 
+    routeOrder = tuple(sorted((departure, destination)))
+    catalog["#RoutesDG"] += 1
     if not mp.contains(catalog["DuplicateRoute"], (departure, destination)):
-        if gph.containsVertex(dgraph, departure) and gph.containsVertex(dgraph, destination):
-            gph.addEdge(dgraph,departure, destination, float(route["distance_km"]))
-        elif not gph.containsVertex(dgraph, departure) and not gph.containsVertex(dgraph, destination):
-            gph.insertVertex(dgraph, departure)
-            gph.insertVertex(dgraph, destination)
-            gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
-        elif not gph.containsVertex(dgraph, departure):
-            gph.insertVertex(dgraph, departure)
-            gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
-        else:
-            gph.insertVertex(dgraph, destination)
-            gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
-        
-        if catalog["1AirportDG"] is None:
-            catalog["1AirportDG"] = departure
+        # if gph.containsVertex(dgraph, departure) and gph.containsVertex(dgraph, destination):
+        #     gph.addEdge(dgraph,departure, destination, float(route["distance_km"]))
+        # elif not gph.containsVertex(dgraph, departure) and not gph.containsVertex(dgraph, destination):
+        #     gph.insertVertex(dgraph, departure)
+        #     gph.insertVertex(dgraph, destination)
+        #     gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
+        # elif not gph.containsVertex(dgraph, departure):
+        #     gph.insertVertex(dgraph, departure)
+        #     gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
+        # else:
+        #     gph.insertVertex(dgraph, destination)
+        #     gph.addEdge(dgraph, departure, destination, float(route["distance_km"]))
+        gph.addEdge(dgraph,departure, destination, float(route["distance_km"]))
         mp.put(catalog["DuplicateRoute"], (departure, destination), None)
 
-    if mp.contains(catalog["DuplicateRoute"], (destination, departure)) and not mp.contains(catalog["DRg"], routeOrder):
-        
+
+
+    if (mp.contains(catalog["DuplicateRoute"], (destination, departure))) and (not mp.contains(catalog["DRg"], routeOrder)):
         if gph.containsVertex(graph, departure) and gph.containsVertex(graph, destination):
             gph.addEdge(graph,departure, destination, float(route["distance_km"]))
-        elif not gph.containsVertex(graph, departure) and not gph.containsVertex(graph, destination):
+        elif (not gph.containsVertex(graph, departure)) and (not gph.containsVertex(graph, destination)):
             gph.insertVertex(graph, departure)
             gph.insertVertex(graph, destination)
+            catalog["LastAirportG"] = destination
             gph.addEdge(graph, departure, destination, float(route["distance_km"]))
         elif not gph.containsVertex(graph, departure):
             gph.insertVertex(graph, departure)
+            catalog["LastAirportG"] = departure
             gph.addEdge(graph, departure, destination, float(route["distance_km"]))
         else:
             gph.insertVertex(graph, destination)
+            catalog["LastAirportG"] = destination
             gph.addEdge(graph, departure, destination, float(route["distance_km"]))
         
         if catalog["1AirportG"] is None:
-            catalog["1AirportG"] = departure
+            catalog["1AirportG"] = departure        
         mp.put(catalog["DRg"], routeOrder, float(route["distance_km"]))
-
 def add_city(catalog, city):
     name = city["city_ascii"]
+    if catalog["FirstCity"] is None:
+        catalog["FirstCity"] = city
     catalog["LastCity"] = city
     if mp.contains(catalog["Cities"], name):
         lt.addLast(me.getValue(mp.get(catalog["Cities"], name)),city)
     else:
         mp.put(catalog["Cities"], name, lt.newList("ARRAY_LIST"))
         lt.addLast(me.getValue(mp.get(catalog["Cities"], name)),city)
+    catalog["NumCities"] += 1
 
 def loadMST(catalog):
     graph = catalog["routesndg"]
@@ -163,23 +188,32 @@ def loadMST(catalog):
     mst["NumNodes"] = numNodes
     mst["GraphMST"] = graphMST
 
+def loadSCC(catalog):
+    catalog["SCC"] = scc.KosarajuSCC(catalog["routesdg"])
+
 # Funciones de consulta
 def getLoadingData(catalog):
     data = {
         "#AirDG" : lt.size(gph.vertices(catalog["routesdg"])),
+        "#RoutesDG" : catalog["#RoutesDG"],
         "#AirG" :  lt.size(gph.vertices(catalog["routesndg"])),
-        "#Cities": mp.size(catalog["Cities"]),
+        "#RoutesG" : catalog["#RoutesG"],
+        "#Cities": catalog["NumCities"],
         "FirstAirportDG" : None,
+        "LastAirportDG" : None,
         "FirstAirportG": None,
+        "LastAirportG": None,
+        "FirstCity" : catalog["FirstCity"],
         "LastCity" : catalog["LastCity"]
     }
     data["FirstAirportDG"] = me.getValue(mp.get(catalog["IATA2name"], catalog["1AirportDG"]))
     data["FirstAirportG"] = me.getValue(mp.get(catalog["IATA2name"], catalog["1AirportG"]))
+    data["LastAirportDG"] = me.getValue(mp.get(catalog["IATA2name"], catalog["LastAirportDG"]))
+    data["LastAirportG"] = me.getValue(mp.get(catalog["IATA2name"], catalog["LastAirportG"]))
 
     return data
 
 def getMostInterconnections(catalog):
-    #Agregar un nuevo arbol donde estan todas las rutas pero es no dirigido, asi calcular degree-outdegree para encontrar indegree con menor O()
     dg = catalog["routesdg"]
     g = catalog["routesndg"]
 
@@ -189,7 +223,7 @@ def getMostInterconnections(catalog):
     max_dg = 0 
 
     for vertex in lt.iterator(gph.vertices(dg)):
-        indegree = gph.degree(dg, vertex)
+        indegree = gph.indegree(dg, vertex)
         outdegree = gph.outdegree(dg,vertex)
         degree = indegree+outdegree
         if degree > max_dg:
@@ -221,7 +255,7 @@ def getMostInterconnections(catalog):
 
 
 def getFlightTrafficClusters(catalog, IATA1, IATA2):
-    kscc = scc.KosarajuSCC(catalog["routesdg"])
+    kscc = catalog["SCC"]
     num_clusters = scc.connectedComponents(kscc)
     connected = scc.stronglyConnected(kscc, IATA1, IATA2)
     return num_clusters, connected, kscc
@@ -619,57 +653,6 @@ def mapFunc(l, func):
     for i in range(1,lt.size(l)+1):
         lt.changeInfo(l,i, func(lt.getElement(l,i)))
 
-def findNearestAirports(catalog, city1, city2):
-    city1 = me.getValue(mp.get(catalog["Cities"], city1))
-    city2 = me.getValue(mp.get(catalog["Cities"], city2))
-
-    olat, olong = float(city1["lat"]), float(city1["lng"])
-    dlat, dlong = float(city2["lat"]), float(city2["lng"])
-
-    treeLat = catalog["TreeAirports"]
-
-    foundAirport = False
-    r = 10
-
-    airOrigin = None
-    airDest = None
-    min_disto = float("inf")
-    min_distd = float("inf")
-    while not foundAirport and r <= 1000:
-        olatSquare = r//2 * 0.009
-        olongSquare = r//2 * (abs(0.009/math.cos(olat*(math.pi/180))))
-
-        dlatSquare = r//2 * 0.009
-        dlongSquare = r//2 * (abs(0.009/math.cos(dlat*(math.pi/180))))
-
-        olatmin, olatmax = olat-olatSquare, olat+olatSquare
-        dlatmin, dlatmax = dlat-dlatSquare, dlat+dlatSquare
-
-        olongmin, olongmax = olong-olongSquare, olong+olongSquare
-        dlongmin, dlongmax = dlong-dlongSquare, dlong+dlongSquare
-
-        
-        if airOrigin is None:
-            for treeLong in lt.iterator(om.values(treeLat, olatmin, olatmax)):
-                for airport in lt.iterator(om.values(treeLong, olongmin, olongmax)):
-                    dist = haversine(airport["Latitude"], airport["Longitude"], olat, olong)
-                    if dist < min_disto:
-                        min_disto = dist
-                        airOrigin = airport
-        
-        if airDest is None:
-            for treeLong in lt.iterator(om.values(treeLat, dlatmin, dlatmax)):
-                for airport in lt.iterator(om.values(treeLong, dlongmin, dlongmax)):
-                    dist = haversine(airport["Latitude"], airport["Longitude"], dlat, dlong)
-                    if dist < min_distd:
-                        min_distd = dist
-                        airDest = airport
-        
-        if (airOrigin is not None) and (airDest is not None):
-            foundAirport = True
-
-        r += 10
-    return (min_disto, airOrigin, min_distd, airDest)
 
 def BreadhtFisrtSearch(graph, source):
     """
